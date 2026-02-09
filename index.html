@@ -465,23 +465,43 @@
         }
 
         function openProduct(id) {
-            sel = products.find(p => p.id === id);
-            document.getElementById('det-name').innerText = sel.name;
-            document.getElementById('det-price').innerText = "₹" + sel.price;
-            document.getElementById('det-mrp').innerText = "₹" + sel.mrp;
+    sel = products.find(p => p.id === id);
+    document.getElementById('det-name').innerText = sel.name;
+    document.getElementById('det-price').innerText = "₹" + sel.price;
+    document.getElementById('det-mrp').innerText = "₹" + sel.mrp;
 
-            const swpWrapper = document.getElementById('swiper-images');
-            swpWrapper.innerHTML = `<div class="swiper-slide"><img src="${sel.imgs[0]}"></div>`;
-            
-            const fS = document.getElementById('full-stack-images');
-            fS.innerHTML = '';
-            (sel.descImgs.length > 0 ? sel.descImgs : sel.imgs).forEach(url => {
-                fS.innerHTML += `<img src="${url}" class="w-full">`;
-            });
+    const swpWrapper = document.getElementById('swiper-images');
+    
+    // 1. Pehle purani images clear karein
+    swpWrapper.innerHTML = ''; 
 
-            showPage('page-detail');
-            new Swiper(".detail-swiper", { pagination: { el: ".swiper-pagination" } });
-        }
+    // 2. Loop chala kar saari photos slides mein add karein
+    sel.imgs.forEach(imgUrl => {
+        swpWrapper.innerHTML += `
+            <div class="swiper-slide">
+                <img src="${imgUrl}" alt="product">
+            </div>`;
+    });
+
+    const fS = document.getElementById('full-stack-images');
+    fS.innerHTML = '';
+    (sel.descImgs.length > 0 ? sel.descImgs : sel.imgs).forEach(url => {
+        fS.innerHTML += `<img src="${url}" class="w-full">`;
+    });
+
+    showPage('page-detail');
+
+    // 3. Swiper ko initialize/update karein
+    // Note: Agar swiper pehle se bana hai toh ye use update kar dega
+    new Swiper(".detail-swiper", { 
+        pagination: { 
+            el: ".swiper-pagination",
+            dynamicBullets: true // Jyada photos hone par dots adjust ho jayenge
+        },
+        observer: true, 
+        observeParents: true 
+    });
+}
 
         function showPage(id) {
             ['page-home', 'page-detail', 'page-address', 'page-summary'].forEach(p => document.getElementById(p).classList.add('hidden'));
@@ -580,6 +600,34 @@ function showPage(id) {
     window.scrollTo(0,0);
 }
 
+      function startTimer() {
+    // 10 minute ka timer (seconds mein: 10 * 60 = 600)
+    let totalSeconds = 600; 
+
+    const hEl = document.getElementById('t-hours');
+    const mEl = document.getElementById('t-min');
+    const sEl = document.getElementById('t-sec');
+
+    const timerInterval = setInterval(() => {
+        if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            return;
+        }
+
+        totalSeconds--;
+
+        // Math calculation
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        // HTML mein update karna (00 format mein)
+        hEl.innerText = String(hours).padStart(2, '0');
+        mEl.innerText = String(minutes).padStart(2, '0');
+        sEl.innerText = String(seconds).padStart(2, '0');
+
+    }, 1000);
+}
         window.onload = () => { init(); startTimer(); };
     </script>
 </body>
