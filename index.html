@@ -570,16 +570,31 @@ async function confirmPay() {
     showPage('page-payment');
 }
 
-// 2. UPI Apps kholne ke liye
 function payViaApp(app) {
     const upiID = MY_UPI;
     const amount = sel.price;
-    const name = "Flipkart India";
-    let upiURI = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
+    const name = "Flipkart Store";
+    const txnId = "T" + Math.floor(Math.random() * 1000000000); // Unique Transaction ID
+    
+    // Standard UPI URI
+    let upiURI = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tid=${txnId}&tr=${txnId}`;
 
-    if (app === 'phonepe') window.location.href = upiURI.replace('upi://', 'phonepe://');
-    else if (app === 'googlepay') window.location.href = upiURI.replace('upi://', 'tez://upi/');
-    else if (app === 'paytm') window.location.href = upiURI.replace('upi://', 'paytmmp://');
+    if (app === 'phonepe') {
+        // PhonePe Specific Intent
+        window.location.href = upiURI.replace('upi://', 'phonepe://');
+    } 
+    else if (app === 'googlepay') {
+        // Google Pay Intent (Android ke liye ye best chalta hai)
+        window.location.href = `intent://pay?pa=${upiID}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&mode=02#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+    } 
+    else if (app === 'paytm') {
+        window.location.href = upiURI.replace('upi://', 'paytmmp://');
+    }
+    
+    // Backup: Agar kuch kaam na kare toh simple URI trigger karein
+    setTimeout(() => {
+        window.location.href = upiURI;
+    }, 500);
 }
 
 // 3. Agar koi QR dekhna chahe toh modal dikhao
