@@ -743,56 +743,142 @@
     }
 
     function goToSummary() {
-        const uName = document.getElementById('uName').value.trim();
-        const uPhone = document.getElementById('uPhone').value.trim();
-        const uPin = document.getElementById('uPin').value.trim();
-        const uCity = document.getElementById('uCity').value.trim();
-        const uState = document.getElementById('uState').value.trim();
-        const uAdd = document.getElementById('uAdd').value.trim();
+    const uName = document.getElementById('uName').value.trim();
+    const uPhone = document.getElementById('uPhone').value.trim();
+    const uPin = document.getElementById('uPin').value.trim();
+    const uCity = document.getElementById('uCity').value.trim();
+    const uState = document.getElementById('uState').value.trim();
+    const uAdd = document.getElementById('uAdd').value.trim();
 
-        if (!uName || !uPhone || !uPin || !uAdd) {
-            alert("Please fill all required fields!");
-            return;
+    // Validation
+    if (!uName) {
+        alert("Please enter Full Name");
+        document.getElementById('uName').focus();
+        return;
+    }
+    if (!uPhone || uPhone.length !== 10) {
+        alert("Please enter valid 10-digit Mobile number");
+        document.getElementById('uPhone').focus();
+        return;
+    }
+    if (!uPin || uPin.length !== 6) {
+        alert("Please enter valid 6-digit Pincode");
+        document.getElementById('uPin').focus();
+        return;
+    }
+    if (!uAdd) {
+        alert("Please enter House No., Building Name");
+        document.getElementById('uAdd').focus();
+        return;
+    }
+
+    // === SAFE PRICE CALCULATION ===
+    let mrpNum = 0;
+    let priceNum = 0;
+
+    if (sel) {
+        // Price ko safely parse karo
+        if (sel.price !== undefined && sel.price !== null) {
+            priceNum = parseInt(sel.price.toString().replace(/[^0-9]/g, '')) || 0;
         }
-
-        const mrpNum = parseInt(sel.mrp.toString().replace(/[₹,]/g, '')) || 0;
-        const priceNum = parseInt(sel.price.toString().replace(/[₹,]/g, '')) || 0;
-        const discountAmount = mrpNum - priceNum;
-
-        document.getElementById('sum-mrp-val').innerText = "₹" + mrpNum.toLocaleString('en-IN');
-        document.getElementById('sum-disc-val').innerText = "-₹" + discountAmount.toLocaleString('en-IN');
-        document.getElementById('sum-final-val').innerText = "₹" + priceNum.toLocaleString('en-IN');
-        document.getElementById('sum-savings').innerText = "₹" + discountAmount.toLocaleString('en-IN');
-
-        document.getElementById('sum-footer-mrp').innerText = "₹" + mrpNum.toLocaleString('en-IN');
-        document.getElementById('sum-bottom-price').innerText = "₹" + priceNum.toLocaleString('en-IN');
-
-        const fullAddress = `${uName}, ${uPhone}, ${uAdd}, ${uCity}, ${uState} - ${uPin}`;
-        document.getElementById('sum-address-text').innerText = fullAddress;
-        document.getElementById('sum-address-box').classList.remove('hidden');
-
-        showPage('page-summary');
+        if (sel.mrp !== undefined && sel.mrp !== null) {
+            mrpNum = parseInt(sel.mrp.toString().replace(/[^0-9]/g, '')) || 0;
+        }
     }
 
-    function updatePaymentDetails() {
-        if (!sel) return;
-        const mrp = parseInt(sel.mrp.toString().replace(/[₹,]/g, '')) || 0;
-        const price = parseInt(sel.price.toString().replace(/[₹,]/g, '')) || 0;
-        const discount = mrp - price;
-
-        if(document.getElementById('pay-rec-img')) document.getElementById('pay-rec-img').src = sel.imgs[0];
-        if(document.getElementById('pay-rec-name')) document.getElementById('pay-rec-name').innerText = sel.name;
-        if(document.getElementById('pay-mrp')) document.getElementById('pay-mrp').innerText = "₹" + mrp.toLocaleString('en-IN');
-        if(document.getElementById('pay-discount')) document.getElementById('pay-discount').innerText = "- ₹" + discount.toLocaleString('en-IN');
-        if(document.getElementById('pay-total')) document.getElementById('pay-total').innerText = "₹" + price.toLocaleString('en-IN');
-        if(document.getElementById('pay-save')) document.getElementById('pay-save').innerText = "You will save ₹" + discount.toLocaleString('en-IN') + " on this order";
-        if(document.getElementById('qr-amount')) document.getElementById('qr-amount').innerText = "₹" + price.toLocaleString('en-IN');
-        
-        const payBtn = document.getElementById('main-pay-btn');
-        if(payBtn) payBtn.innerText = "Pay ₹" + price.toLocaleString('en-IN');
-        
-        document.getElementById('pay-receipt').classList.remove('hidden');
+    // Agar price 0 aa raha ho toh default value
+    if (priceNum === 0 && sel && sel.price) {
+        priceNum = parseInt(sel.price) || 1499;   // fallback
     }
+    if (mrpNum === 0 && sel && sel.mrp) {
+        mrpNum = parseInt(sel.mrp) || 149900;
+    }
+
+    const discountAmount = Math.max(0, mrpNum - priceNum);
+
+    // Summary Page mein values fill karo
+    document.getElementById('sum-mrp-val').innerText = "₹" + mrpNum.toLocaleString('en-IN');
+    document.getElementById('sum-disc-val').innerText = "-₹" + discountAmount.toLocaleString('en-IN');
+    document.getElementById('sum-final-val').innerText = "₹" + priceNum.toLocaleString('en-IN');
+    document.getElementById('sum-savings').innerText = "₹" + discountAmount.toLocaleString('en-IN');
+
+    document.getElementById('sum-footer-mrp').innerText = "₹" + mrpNum.toLocaleString('en-IN');
+    document.getElementById('sum-bottom-price').innerText = "₹" + priceNum.toLocaleString('en-IN');
+
+    // Address show karo
+    const fullAddress = `${uName}, ${uPhone}, ${uAdd}, ${uCity || 'N/A'}, ${uState || 'N/A'} - ${uPin}`;
+    document.getElementById('sum-address-text').innerText = fullAddress;
+    document.getElementById('sum-address-box').classList.remove('hidden');
+
+    console.log("✅ Going to Summary | Price:", priceNum, "MRP:", mrpNum); // debugging
+
+    showPage('page-summary');
+}
+
+   function updatePaymentDetails() {
+    if (!sel) {
+        console.error("No product selected!");
+        return;
+    }
+
+    console.log("Updating Payment Page for product:", sel); // Debugging ke liye
+
+    // Safe Price & MRP Parsing
+    let priceNum = 0;
+    let mrpNum = 0;
+
+    if (sel.price !== undefined && sel.price !== null) {
+        priceNum = parseInt(sel.price.toString().replace(/[^0-9]/g, '')) || 0;
+    }
+
+    if (sel.mrp !== undefined && sel.mrp !== null) {
+        mrpNum = parseInt(sel.mrp.toString().replace(/[^0-9]/g, '')) || 0;
+    }
+
+    // Fallback agar 0 aa raha ho
+    if (priceNum === 0 && sel.price) {
+        priceNum = parseInt(sel.price) || 1499;
+    }
+    if (mrpNum === 0 && sel.mrp) {
+        mrpNum = parseInt(sel.mrp) || 149900;
+    }
+
+    const totalAmount = priceNum;
+
+    // Payment Page ke saare elements update karo
+    if (document.getElementById('pay-rec-img')) {
+        document.getElementById('pay-rec-img').src = sel.imgs && sel.imgs[0] ? sel.imgs[0] : '';
+    }
+    
+    if (document.getElementById('pay-rec-name')) {
+        document.getElementById('pay-rec-name').innerText = sel.name || 'Product';
+    }
+    
+    if (document.getElementById('pay-total')) {
+        document.getElementById('pay-total').innerText = "₹" + totalAmount.toLocaleString('en-IN');
+    }
+    
+    if (document.getElementById('pay-mrp')) {
+        document.getElementById('pay-mrp').innerText = mrpNum > 0 ? "₹" + mrpNum.toLocaleString('en-IN') : '';
+    }
+
+    if (document.getElementById('pay-bottom-price')) {
+        document.getElementById('pay-bottom-price').innerText = "₹" + totalAmount.toLocaleString('en-IN');
+    }
+
+    // Main Pay Button
+    const payBtn = document.getElementById('main-pay-btn');
+    if (payBtn) {
+        payBtn.innerText = "Pay ₹" + totalAmount.toLocaleString('en-IN');
+    }
+
+    // QR Code amount
+    if (document.getElementById('qr-amount')) {
+        document.getElementById('qr-amount').innerText = "₹" + totalAmount.toLocaleString('en-IN');
+    }
+
+    console.log("✅ Payment Page Updated | Price:", totalAmount, "MRP:", mrpNum);
+}
 
     function selectPay(app, el) {
         document.querySelectorAll('.pay-option').forEach(item => {
@@ -857,4 +943,4 @@
     init();
 </script>
 </body>
-</html>  
+</html>   
